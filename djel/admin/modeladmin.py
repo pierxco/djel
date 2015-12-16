@@ -5,12 +5,12 @@ from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
 
 
-def fk_link_method(fieldname, description):
+def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode):
     def f(self, obj):
         field = getattr(obj, fieldname)
         if field is not None:
             url = reverse('admin:{}_{}_change'.format(field._meta.app_label, field._meta.model_name), args=(field.pk,))
-            link = u'<b><a href="{}">{}</a></b>'.format(url, force_unicode(field))
+            link = u'<b><a href="{}">{}</a></b>'.format(url, format_anchor_text_func(field))
             ajax_link = '<a href="{}?_popup=1" class="ajax-link"></a>'.format(url)
             return link + ajax_link
         else:
