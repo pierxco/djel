@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE
 from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
 
@@ -14,7 +13,7 @@ def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode
             ajax_link = '<a href="{}?_popup=1" class="ajax-link"></a>'.format(url)
             return link + ajax_link
         else:
-            return EMPTY_CHANGELIST_VALUE
+            return self.get_empty_value_display()
     f.allow_tags = True
     f.short_description = description
     f.admin_order_field = fieldname
