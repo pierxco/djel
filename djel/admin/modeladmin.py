@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
 
 
-def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode):
+def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode, admin_order_field=True):
     def f(self, obj):
         field = getattr(obj, fieldname)
         if field is not None:
@@ -17,7 +17,8 @@ def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode
             return self.get_empty_value_display()
     f.allow_tags = True
     f.short_description = description
-    f.admin_order_field = fieldname
+    if admin_order_field:
+        f.admin_order_field = fieldname if isinstance(admin_order_field, bool) else admin_order_field
     return f
 
 
