@@ -5,6 +5,15 @@ from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
 
 
+def get_empty_value_display(model_admin):
+    if hasattr(model_admin, 'get_empty_value_display'):
+        return model_admin.get_empty_value_display()
+    else:
+        # Django < 1.9
+        from django.contrib.admin.views.main import EMPTY_CHANGELIST_VALUE
+        return EMPTY_CHANGELIST_VALUE
+
+
 def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode, admin_order_field=True):
     def f(self, obj):
         field = getattr(obj, fieldname)
@@ -14,12 +23,13 @@ def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode
             ajax_link = '<a href="{}?_popup=1" class="ajax-link"></a>'.format(url)
             return link + ajax_link
         else:
-            return self.get_empty_value_display()
+            return get_empty_value_display(self)
     f.allow_tags = True
     f.short_description = description
     if admin_order_field:
         f.admin_order_field = fieldname if isinstance(admin_order_field, bool) else admin_order_field
     return f
+
 
 
 class ReadOnlyAdminMixin(object):
