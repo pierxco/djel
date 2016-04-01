@@ -14,16 +14,22 @@ def get_empty_value_display(model_admin):
         return EMPTY_CHANGELIST_VALUE
 
 
-def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode, admin_order_field=True):
+def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode, admin_order_field=True,
+                   add_filter=False):
     def f(self, obj):
         field = getattr(obj, fieldname)
         if field is not None:
             url = reverse('admin:{}_{}_change'.format(field._meta.app_label, field._meta.model_name), args=(field.pk,))
             link = u'<b><a href="{}">{}</a></b>'.format(url, format_anchor_text_func(field))
             ajax_link = '<a href="{}?_popup=1" class="ajax-link"></a>'.format(url)
+            filter_link = u'<a href="?{}__id__exact={}" class="filter-link"></a>'.format(fieldname, field.pk)
+            if add_filter:
+                return link + '<div class="popup-filter">' + ajax_link + filter_link + '</div>'
             return link + ajax_link
         else:
             return get_empty_value_display(self)
+
+
     f.allow_tags = True
     f.short_description = description
     if admin_order_field:
