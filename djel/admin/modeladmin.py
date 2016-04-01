@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+from django.contrib.admin import ModelAdmin
+from django.contrib.admin import site
 from django.contrib.admin.sites import AdminSite
 from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
+
+from .widgets import VerboseForeignKeyRawIdWidget, VerboseManyToManyRawIdWidget
 
 
 def get_empty_value_display(model_admin):
@@ -37,7 +42,6 @@ def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode
     return f
 
 
-
 class ReadOnlyAdminMixin(object):
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
@@ -62,3 +66,14 @@ class ReadOnlyAdminMixin(object):
             return False
 
 
+class ModelAdminWithVerboseRawId(ModelAdmin):
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.name in self.raw_id_fields:
+            kwargs.pop("request", None)
+            field_type = db_field.rel.__class__.__name__
+            if field_type == "ManyToOneRel":
+                kwargs['widget'] = VerboseForeignKeyRawIdWidget(db_field.rel, site)
+            elif field_type == "ManyToManyRel":
+                kwargs['widget'] = VerboseManyToManyRawIdWidget(db_field.rel, site)
+            return db_field.formfield(**kwargs)
+        return super(ModelAdminWithVerboseRawId, self).formfield_for_dbfield(db_field, **kwargs)
