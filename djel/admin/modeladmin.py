@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 
 from django.contrib.admin import ModelAdmin
 from django.contrib.admin import site
-from django.contrib.admin.sites import AdminSite
 from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
+from django.utils.html import escape, format_html
 
 from .widgets import VerboseForeignKeyRawIdWidget, VerboseManyToManyRawIdWidget
 
@@ -19,21 +19,31 @@ def get_empty_value_display(model_admin):
         return EMPTY_CHANGELIST_VALUE
 
 
-def fk_link_method(fieldname, description, format_anchor_text_func=force_unicode, admin_order_field=True,
-                   add_filter=False, query_param_key=None):
+def fk_link_method(fieldname,
+                   description,
+                   format_anchor_text_func=force_unicode,
+                   admin_order_field=True,
+                   add_filter=False,
+                   query_param_key=None):
     def f(self, obj):
         field = getattr(obj, fieldname)
         if field is not None:
             url = reverse('admin:{}_{}_change'.format(field._meta.app_label, field._meta.model_name), args=(field.pk,))
-            link = u'<b><a href="{}">{}</a></b>'.format(url, format_anchor_text_func(field))
+            link = format_html('<b><a href="{}">{}</a></b>', url, format_anchor_text_func(field))
             ajax_link = '<a href="{}?_popup=1" class="ajax-link"></a>'.format(url)
             if add_filter:
                 if query_param_key:
-                    filter_link = u'<span data-param="{}={}" class="filter-link"></span>'.format(query_param_key,
-                                                                                                 field.pk)
+                    filter_link = format_html(
+                        '<span data-param="{}={}" class="filter-link"></span>',
+                        query_param_key,
+                        field.pk,
+                    )
                 else:
-                    filter_link = u'<span data-param="{}__id__exact={}" class="filter-link"></span>'.format(fieldname,
-                                                                                                            field.pk)
+                    filter_link = format_html(
+                        '<span data-param="{}__id__exact={}" class="filter-link"></span>',
+                        fieldname,
+                        field.pk,
+                    )
                 return link + '<div class="popup-filter">' + ajax_link + filter_link + '</div>'
             return link + ajax_link
         else:
